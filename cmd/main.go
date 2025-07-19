@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -80,10 +81,27 @@ func registerMetrics(reg prometheus.Registerer) *metrics {
 	return m
 }
 
+var (
+	port string
+	path string
+)
+
+func init() {
+	port = os.Getenv("EXPORTER_PORT")
+	path = os.Getenv("EXPORTER_PATH")
+	if port == "" {
+		port = ":8080"
+	}
+	if path == "" {
+		path = "/metrics"
+	}
+	fmt.Printf("port: %s\npath: %s\n", port, path)
+}
+
 func main() {
 	reg := prometheus.NewRegistry()
 	m := registerMetrics(reg)
 	go background(m)
-	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	http.Handle(path, promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+	log.Fatal(http.ListenAndServe(port, nil))
 }
