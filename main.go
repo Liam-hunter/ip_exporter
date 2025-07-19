@@ -27,9 +27,10 @@ func background(m *metrics) {
 
 	for _ = range t.C {
 		newIp, err := getIP()
+		fmt.Println(newIp)
 		if err != nil {
 			fmt.Println(err)
-			break
+			continue
 		}
 		if newIp != currentIP {
 			//deregister old vector
