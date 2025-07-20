@@ -24,6 +24,7 @@ type ip struct {
 func background(m *metrics) {
 	t := time.NewTicker(10 * time.Second)
 	currentIP := ""
+	c = http.Client{Timeout: 2 * time.Second}
 
 	for _ = range t.C {
 		newIp, err := getIP()
@@ -94,11 +95,6 @@ var (
 )
 
 func init() {
-	c = http.Client{
-		// shorten timeout as responses should be pretty quick
-		// from this api
-		Timeout: 2 * time.Second,
-	}
 	port = os.Getenv("EXPORTER_PORT")
 	path = os.Getenv("EXPORTER_PATH")
 	if port == "" {
