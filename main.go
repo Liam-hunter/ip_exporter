@@ -45,11 +45,16 @@ func background(m *metrics) {
 // getIP queries a public api that returns your IP address
 // and returns it as a string
 func getIP() (string, error) {
-	resp, err := http.Get("https://api.ipify.org?format=json")
+	resp, err := c.Get("https://api.ipify.org?format=json")
 	if err != nil {
 		return "", err
 	}
+	if resp.StatusCode > 299 {
+		return "", fmt.Errorf("Server returned code: %i", resp.StatusCode)
+	}
+
 	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		return "", err
 	}
@@ -85,9 +90,15 @@ func registerMetrics(reg prometheus.Registerer) *metrics {
 var (
 	port string
 	path string
+	c    http.Client
 )
 
 func init() {
+	c = http.Client{
+		// shorten timeout as responses should be pretty quick
+		// from this api
+		Timeout: 2 * time.Second,
+	}
 	port = os.Getenv("EXPORTER_PORT")
 	path = os.Getenv("EXPORTER_PATH")
 	if port == "" {
