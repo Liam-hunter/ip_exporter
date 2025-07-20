@@ -24,10 +24,10 @@ type ip struct {
 func background(m *metrics) {
 	t := time.NewTicker(10 * time.Second)
 	currentIP := ""
-	c = http.Client{Timeout: 2 * time.Second}
+	c := &http.Client{Timeout: 2 * time.Second}
 
 	for _ = range t.C {
-		newIp, err := getIP()
+		newIp, err := getIP(c)
 		fmt.Println(newIp)
 		if err != nil {
 			fmt.Println(err)
@@ -45,7 +45,7 @@ func background(m *metrics) {
 
 // getIP queries a public api that returns your IP address
 // and returns it as a string
-func getIP() (string, error) {
+func getIP(c *http.Client) (string, error) {
 	resp, err := c.Get("https://api.ipify.org?format=json")
 	if err != nil {
 		return "", err
@@ -91,7 +91,6 @@ func registerMetrics(reg prometheus.Registerer) *metrics {
 var (
 	port string
 	path string
-	c    http.Client
 )
 
 func init() {
